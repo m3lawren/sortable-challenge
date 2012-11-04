@@ -201,22 +201,11 @@ def findProducts(listing, products):
 
     title = ' %s ' % listing.l_title
     title_nodash = ' %s ' % listing.l_title_nodash
-   
-    # First pass, check for model, mfr, and family
-    for product in products:
-        mfr = product.l_mfr
+  
+    matchedFamily = []
+    matchedNoFamily = []
 
-        if mfr in title or mfr in listing.l_mfr:
-            if product.family and product.l_family in title:
-                if product.l_regex.search(title) \
-                    or product.l_regex.search(listing.l_title_nodash):
-
-                    matchedProducts.append(product)
-
-    if len(matchedProducts) > 0:
-        return matchedProducts
-
-    # Next pass, check for the product's model in the title
+    # First pass, check for model, mfr
     for product in products:
         mfr = product.l_mfr
 
@@ -224,28 +213,19 @@ def findProducts(listing, products):
             if product.l_regex.search(title) \
                 or product.l_regex.search(listing.l_title_nodash):
 
-                matchedProducts.append(product)
+                if product.family and product.l_family in title:
+                    matchedFamily.append(product)
+                else:
+                    matchedNoFamily.append(product)
 
-    if len(matchedProducts) > 0:
-        return matchedProducts
-    
-    # Next pass, check for model, mfr, and family, allowing trailing alphanum
+    if len(matchedFamily) > 0:
+        return matchedFamily 
+
+    if len(matchedNoFamily) > 0:
+        return matchedNoFamily
+
+    # Next pass, check for model, and mfr, allowing trailing alphanum
     # after the model.
-    for product in products:
-        mfr = product.l_mfr
-
-        if mfr in title or mfr in listing.l_mfr:
-            if product.family and product.l_family in title:
-                if product.l_regex_allow_trail.search(title) \
-                    or product.l_regex_allow_trail.search(listing.l_title_nodash):
-
-                    matchedProducts.append(product)
-
-    if len(matchedProducts) > 0:
-        return matchedProducts
-
-    # Next pass, check for the product's model in the title, allowing trailing
-    # alphpanum after the model.
     for product in products:
         mfr = product.l_mfr
 
@@ -253,28 +233,19 @@ def findProducts(listing, products):
             if product.l_regex_allow_trail.search(title) \
                 or product.l_regex_allow_trail.search(listing.l_title_nodash):
 
-                matchedProducts.append(product)
+                if product.family and product.l_family in title:
+                    matchedFamily.append(product)
+                else:
+                    matchedNoFamily.append(product)
 
-    if len(matchedProducts) > 0:
-        return matchedProducts
-    
-    # Next pass, check for model, mfr, and family, allowing anything around
+    if len(matchedFamily) > 0:
+        return matchedFamily 
+
+    if len(matchedNoFamily) > 0:
+        return matchedNoFamily
+
+    # Next pass, check for model, mfr, allowing anything around
     # the model.
-    for product in products:
-        mfr = product.l_mfr
-
-        if mfr in title or mfr in listing.l_mfr:
-            if product.family and product.l_family in title:
-                if product.l_regex_allow_lead_and_trail.search(title) \
-                    or product.l_regex_allow_lead_and_trail.search(listing.l_title_nodash):
-
-                    matchedProducts.append(product)
-
-    if len(matchedProducts) > 0:
-        return matchedProducts
-
-    # Next pass, check for the product's model in the title, allowing anything
-    # around the model.
     for product in products:
         mfr = product.l_mfr
 
@@ -282,11 +253,17 @@ def findProducts(listing, products):
             if product.l_regex_allow_lead_and_trail.search(title) \
                 or product.l_regex_allow_lead_and_trail.search(listing.l_title_nodash):
 
-                matchedProducts.append(product)
+                if product.family and product.l_family in title:
+                    matchedFamily.append(product)
+                else:
+                    matchedNoFamily.append(product)
 
-    if len(matchedProducts) > 0:
-        return matchedProducts
-    
+    if len(matchedFamily) > 0:
+        return matchedFamily 
+
+    if len(matchedNoFamily) > 0:
+        return matchedNoFamily
+
     # Next pass, if no models were matched then it may be a family-specific
     # accessory.
     if ' for ' in title:
