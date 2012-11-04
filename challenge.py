@@ -86,6 +86,13 @@ class Listing(object):
                            'currency'    : self.currency, 
                            'price'       : self.price})
 
+    def toDict(self):
+        """Gets this as a dict."""
+        return {'title'        : self.title,
+                'manufacturer' : self.mfr,
+                'currency'     : self.currency,
+                'price'        : self.price}
+
 def loadProducts(file_name):
     """Loads a list of products from a file. 
     
@@ -183,12 +190,10 @@ def loadListings(fileName):
             if 'price' not in jsonObj:
                 raise KeyError('Invalid listing on line %d, missing price.' % lineNumber)
 
-            result.append(Listing(jsonObj['title'], 
+            yield Listing(jsonObj['title'], 
                                   jsonObj['manufacturer'], 
                                   jsonObj['currency'], 
-                                  jsonObj['price']))
-
-    return result
+                                  jsonObj['price'])
 
 def findProducts(listing, products):
     matchedProducts = []
@@ -320,13 +325,21 @@ def main():
     products = loadProducts(productFile)
     listings = loadListings(listingFile)
 
+    productResults = {}
+
     for listing in listings:
         matchedProducts = findProducts(listing, products)
-        if len(matchedProducts) > 1:
-            print listing
-            for product in matchedProducts:
-                print product
-            print ""
+
+        for product in matchedProducts:
+            name = product.productName
+
+            if name not in productResults:
+                productResults[name] = []
+
+            productResults[name].append(listing.toDict())
+
+    for product, matchedListings in productResults.iteritems():
+        print json.dumps({'product_name': product, 'listings': matchedListings})
 
 def usage():
     print """challenge.py, an implementation of Sortable's coding challenge
