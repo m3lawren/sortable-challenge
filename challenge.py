@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
-import json
+from datetime import datetime
 import getopt
-import sys
+import json
 import re
+import sys
 
 class Product(object):
     """Representation of a product."""
@@ -190,10 +191,11 @@ def loadListings(fileName):
             if 'price' not in jsonObj:
                 raise KeyError('Invalid listing on line %d, missing price.' % lineNumber)
 
-            yield Listing(jsonObj['title'], 
+            result.append(Listing(jsonObj['title'], 
                                   jsonObj['manufacturer'], 
                                   jsonObj['currency'], 
-                                  jsonObj['price'])
+                                  jsonObj['price']))
+    return result
 
 def findProducts(listing, products):
     matchedProducts = []
@@ -301,31 +303,11 @@ def findProducts(listing, products):
                 matchedProducts.append(product)
 
     return matchedProducts
-
-def main():
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hp:l:', ['help','products=', 'listings='])
-    except getopt.GetoptError as err:
-        print str(err)
-        usage()
-        sys.exit(2)
-
-    productFile = 'products.txt'
-    listingFile = 'listings.txt'
-
-    for o, a in opts:
-        if o in ('-h', '--help'):
-            usage()
-            sys.exit()
-        elif o in ('-p', '--products'):
-            productFile = str(a)
-        elif o in ('-l', '--listings'):
-            listingFile = str(a)
-
-    products = loadProducts(productFile)
-    listings = loadListings(listingFile)
-
+   
+def doMatching(products, listings):
     productResults = {}
+
+    processedCount = 0
 
     for listing in listings:
         matchedProducts = findProducts(listing, products)
@@ -338,8 +320,61 @@ def main():
 
             productResults[name].append(listing.toDict())
 
-    for product, matchedListings in productResults.iteritems():
-        print json.dumps({'product_name': product, 'listings': matchedListings})
+        processedCount += 1
+        if processedCount % 250 == 0:
+            log('Processed %d/%d (%0.2f%%)' % (processedCount, 
+                                               len(listings), 
+                                               100 * float(processedCount) / len(listings)))
+
+    return productResults
+
+def log(msg):
+    sys.stderr.write("[%s] %s\n" % (str(datetime.now()), msg))
+
+def main(argv):
+    try:
+        opts, args = getopt.getopt(argv, 'hp:l:o:', ['help','products=', 'listings=', 'output='])
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit(2)
+
+    productFile = 'products.txt'
+    listingFile = 'listings.txt'
+    outputFile = 'matches.txt'
+
+    for o, a in opts:
+        if o in ('-h', '--help'):
+            usage()
+            sys.exit()
+        elif o in ('-p', '--products'):
+            productFile = str(a)
+        elif o in ('-l', '--listings'):
+            listingFile = str(a)
+        elif o in ('-o', '--output'):
+            outputFile = str(a)
+
+    log("Loading products from %s..." % productFile)
+    products = loadProducts(productFile)
+    log("Loaded %d products." % len(products))
+
+    log("Loading listings from %s..." % listingFile)
+    listings = loadListings(listingFile)
+    log("Loaded %d listings." % len(listings))
+
+    log("Matching...")
+
+    productResults = doMatching(products, listings)
+
+    log("Done matching.")
+    log("Writing matches to '%s'..." % outputFile)
+
+    with open(outputFile, 'w') as output:
+        for product in products:
+            matchedListings = productResults.get(product.productName, [])
+            output.write('%s\n' % json.dumps({'product_name': product.productName, 'listings': matchedListings}))
+
+    log("Done.")
 
 def usage():
     print """challenge.py, an implementation of Sortable's coding challenge
@@ -347,7 +382,8 @@ Copyright (C) 2012 Matt Lawrence
 
  -h, --help              displays this help
  -p, --products=FILE     use a specific product file, defaults to 'products.txt'
- -l, --listings=FILE     use a specific listing file, defaults to 'listings.txt'"""
+ -l, --listings=FILE     use a specific listing file, defaults to 'listings.txt'
+ -o, --output=FILE       use a specific file for output, defaults to 'matches.txt'"""
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
