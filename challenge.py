@@ -3,6 +3,7 @@
 import json
 import getopt
 import sys
+import re
 
 class Product(object):
     """Representation of a product."""
@@ -20,6 +21,24 @@ class Product(object):
         self.l_model_nodash = self.l_model.replace('-', '')
         self.l_model_dashtospace = self.l_model.replace('-', ' ')
         self.l_model_spacetodash = self.l_model.replace(' ', '-')
+
+        regex = '(\W%s\W|\W%s\W|\W%s\W|\W%s\W|\W%s\W)' % (
+            self.l_model, 
+            self.l_model_nospace,
+            self.l_model_nodash,
+            self.l_model_dashtospace,
+            self.l_model_spacetodash)
+
+        self.l_regex = re.compile(regex, re.I)
+
+        regex = '(%s|%s|%s|%s|%s)' % (
+            self.l_model, 
+            self.l_model_nospace,
+            self.l_model_nodash,
+            self.l_model_dashtospace,
+            self.l_model_spacetodash)
+
+        self.l_regex_relaxed = re.compile(regex, re.I)
 
         if family:
             self.l_family = family.lower()
@@ -107,6 +126,11 @@ def loadProducts(file_name):
                 family = 'PEN'
                 model = model[4:]
 
+            # Panasonic Lumix DMC series seem to have the same issue
+            if 'panasonic' == mfr.lower() and model[:4] == 'DMC-':
+                family = 'DMC'
+                model = model[4:]
+
             result.append(Product(productName, mfr, family, model, announcedDate))
 
     return result
@@ -156,22 +180,64 @@ def loadListings(fileName):
 def findProducts(listing, products):
     matchedProducts = []
 
-    title = listing.l_title
-
-    # First pass, check for the product's model in the title
+    title = ' %s ' % listing.l_title
+    title_nodash = ' %s ' % listing.l_title_nodash
+   
+    # First pass, check for model, mfr, and family
     for product in products:
         mfr = product.l_mfr
 
         if mfr in title or mfr in listing.l_mfr:
-            if product.l_model in title \
-                or product.l_model_nospace in title \
-                or product.l_model_dashtospace in title \
-                or product.l_model_spacetodash in title \
-                or product.l_model_nodash in listing.l_title_nodash:
+            if product.family and product.l_family in title:
+                if product.l_regex.search(title) \
+                    or product.l_regex.search(listing.l_title_nodash):
+
+                    matchedProducts.append(product)
+
+    if len(matchedProducts) > 0:
+        return matchedProducts
+
+    # Next pass, check for the product's model in the title
+    for product in products:
+        mfr = product.l_mfr
+
+        if mfr in title or mfr in listing.l_mfr:
+            if product.l_regex.search(title) \
+                or product.l_regex.search(listing.l_title_nodash):
 
                 matchedProducts.append(product)
 
-    # Second pass, if no models were matched then it may be a family-specific
+    if len(matchedProducts) > 0:
+        return matchedProducts
+    
+    # Next pass, check for model, mfr, and family relaxed
+    for product in products:
+        mfr = product.l_mfr
+
+        if mfr in title or mfr in listing.l_mfr:
+            if product.family and product.l_family in title:
+                if product.l_regex_relaxed.search(title) \
+                    or product.l_regex_relaxed.search(listing.l_title_nodash):
+
+                    matchedProducts.append(product)
+
+    if len(matchedProducts) > 0:
+        return matchedProducts
+
+    # Next pass, check for the product's model in the title relaxed
+    for product in products:
+        mfr = product.l_mfr
+
+        if mfr in title or mfr in listing.l_mfr:
+            if product.l_regex_relaxed.search(title) \
+                or product.l_regex_relaxed.search(listing.l_title_nodash):
+
+                matchedProducts.append(product)
+
+    if len(matchedProducts) > 0:
+        return matchedProducts
+    
+    # Next pass, if no models were matched then it may be a family-specific
     # accessory.
     if ' for ' in title:
         for product in products:
@@ -214,6 +280,9 @@ def main():
         matchedProducts = findProducts(listing, products)
         if len(matchedProducts) == 0:
             print listing
+            #for product in matchedProducts:
+            #    print product
+            #print ""
 
 def usage():
     print """challenge.py, an implementation of Sortable's coding challenge
