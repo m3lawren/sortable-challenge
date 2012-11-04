@@ -16,37 +16,37 @@ class Product(object):
         self.announcedDate = announcedDate
 
         self.l_mfr = mfr.lower()
-        self.l_model = model.lower()
+        
+        l_model = model.lower()
+        l_model_nospace = l_model.replace(' ', '')
+        l_model_nodash = l_model.replace('-', '')
+        l_model_dashtospace = l_model.replace('-', ' ')
+        l_model_spacetodash = l_model.replace(' ', '-')
 
-        self.l_model_nospace = self.l_model.replace(' ', '')
-        self.l_model_nodash = self.l_model.replace('-', '')
-        self.l_model_dashtospace = self.l_model.replace('-', ' ')
-        self.l_model_spacetodash = self.l_model.replace(' ', '-')
-
-        regex = '(\W%s\W|\W%s\W|\W%s\W|\W%s\W|\W%s\W)' % (
-            self.l_model, 
-            self.l_model_nospace,
-            self.l_model_nodash,
-            self.l_model_dashtospace,
-            self.l_model_spacetodash)
+        regex = '\W(%s|%s|%s|%s|%s)\W' % (
+            l_model, 
+            l_model_nospace,
+            l_model_nodash,
+            l_model_dashtospace,
+            l_model_spacetodash)
 
         self.l_regex = re.compile(regex, re.I)
         
-        regex = '(\W%s|\W%s|\W%s|\W%s|\W%s)' % (
-            self.l_model, 
-            self.l_model_nospace,
-            self.l_model_nodash,
-            self.l_model_dashtospace,
-            self.l_model_spacetodash)
+        regex = '\W(%s|%s|%s|%s|%s)' % (
+            l_model, 
+            l_model_nospace,
+            l_model_nodash,
+            l_model_dashtospace,
+            l_model_spacetodash)
         
         self.l_regex_allow_trail = re.compile(regex, re.I)
 
         regex = '(%s|%s|%s|%s|%s)' % (
-            self.l_model, 
-            self.l_model_nospace,
-            self.l_model_nodash,
-            self.l_model_dashtospace,
-            self.l_model_spacetodash)
+            l_model, 
+            l_model_nospace,
+            l_model_nodash,
+            l_model_dashtospace,
+            l_model_spacetodash)
 
         self.l_regex_allow_lead_and_trail = re.compile(regex, re.I)
 
@@ -76,9 +76,8 @@ class Listing(object):
         self.price = price
 
         self.l_title = title.lower()
-        self.l_mfr = mfr.lower()
-
         self.l_title_nodash = self.l_title.replace('-', '')
+        self.l_mfr = mfr.lower()
 
     def __str__(self):
         """Gets the json string representation of the listing."""
