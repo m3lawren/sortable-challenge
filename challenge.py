@@ -13,6 +13,12 @@ class Product(object):
         self.model = model
         self.announcedDate = announcedDate
 
+        self.l_mfr = mfr.lower()
+        self.l_model = model.lower()
+
+        if family:
+            self.l_family = family.lower()
+
     def __str__(self):
         """Gets the json string representation of the product."""
         tempDict = {'product_name' : self.productName, 
@@ -34,6 +40,9 @@ class Listing(object):
         self.mfr = mfr
         self.currency = currency
         self.price = price
+
+        self.l_title = title.lower()
+        self.l_mfr = mfr.lower()
 
     def __str__(self):
         """Gets the json string representation of the listing."""
@@ -140,11 +149,11 @@ def loadListings(fileName):
 def findProducts(listing, products):
     matchedProducts = []
 
+    title = listing.l_title
 
     # First pass, check for the product's model in the title
-    title = listing.title.lower()
     for product in products:
-        model = product.model.lower()
+        model = product.l_model
     
         if model in title:
             matchedProducts.append(product)
@@ -158,8 +167,8 @@ def findProducts(listing, products):
             if not product.family:
                 continue
 
-            mfr = product.mfr.lower()
-            family = product.family.lower()
+            mfr = product.l_mfr
+            family = product.l_family
             if family in title and mfr in title:
                 matchedProducts.append(product)
 
