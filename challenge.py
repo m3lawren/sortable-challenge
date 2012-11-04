@@ -18,7 +18,7 @@ class Product(object):
         tempDict = {'product_name' : self.productName, 
                     'manufacturer' : self.mfr, 
                     'model'        : self.model, 
-                    'announcedDate': self.announcedDate}
+                    'announced-date': self.announcedDate}
     
         #Family is optional, don't include it at all if it's not present
         if self.family:
@@ -86,7 +86,7 @@ def loadProducts(file_name):
             #Fetch optional fields, default to None
             family = jsonObj.get('family', None) 
 
-            result.append(Product(productName, mfr, model, announcedDate, family))
+            result.append(Product(productName, mfr, family, model, announcedDate))
 
     return result
 
