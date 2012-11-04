@@ -125,7 +125,10 @@ def loadListings(fileName):
             if 'price' not in jsonObj:
                 raise KeyError('Invalid listing on line %d, missing price.' % lineNumber)
 
-            result.append(Listing(jsonObj['title'], jsonObj['manufacturer'], jsonObj['currency'], jsonObj['price']))
+            result.append(Listing(jsonObj['title'], 
+                                  jsonObj['manufacturer'], 
+                                  jsonObj['currency'], 
+                                  jsonObj['price']))
 
     return result
 
