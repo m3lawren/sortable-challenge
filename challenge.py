@@ -132,6 +132,35 @@ def loadListings(fileName):
 
     return result
 
+def findProducts(listing, products):
+    matchedProducts = []
+
+
+    # First pass, check for the product's model in the title
+    title = listing.title.lower()
+    for product in products:
+        model = product.model.lower()
+
+        if model in title:
+            matchedProducts.append(product)
+
+    # Second pass, if no models were matched then it may be a family-specific
+    # accessory.
+    if ' for ' in title:
+        for product in products:
+
+            # Skip over products with no family
+            if not product.family:
+                continue
+
+            family = product.family.lower()
+            if family in title:
+                matchedProducts.append(product)
+
+       
+
+    return matchedProducts
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hp:l:', ['help','products=', 'listings='])
@@ -154,6 +183,11 @@ def main():
 
     products = loadProducts(productFile)
     listings = loadListings(listingFile)
+
+    for listing in listings:
+        matchedProducts = findProducts(listing, products)
+        if len(matchedProducts) == 0:
+            print listing
 
 def usage():
     print """challenge.py, an implementation of Sortable's coding challenge
