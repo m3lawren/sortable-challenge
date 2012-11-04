@@ -18,37 +18,39 @@ class Product(object):
         self.l_mfr = mfr.lower()
         
         l_model = model.lower()
-        l_model_nospace = l_model.replace(' ', '')
-        l_model_nodash = l_model.replace('-', '')
-        l_model_dashtospace = l_model.replace('-', ' ')
-        l_model_spacetodash = l_model.replace(' ', '-')
+
+        e_model = re.escape(l_model)
+        e_model_nospace = re.escape(l_model.replace(' ', ''))
+        e_model_nodash = re.escape(l_model.replace('-', ''))
+        e_model_dashtospace = re.escape(l_model.replace('-', ' '))
+        e_model_spacetodash = re.escape(l_model.replace(' ', '-'))
 
         regex = '\W(%s|%s|%s|%s|%s)\W' % (
-            l_model, 
-            l_model_nospace,
-            l_model_nodash,
-            l_model_dashtospace,
-            l_model_spacetodash)
+            e_model, 
+            e_model_nospace,
+            e_model_nodash,
+            e_model_dashtospace,
+            e_model_spacetodash)
 
-        self.l_regex = re.compile(regex, re.I)
+        self.l_regex = re.compile(regex)
         
         regex = '\W(%s|%s|%s|%s|%s)' % (
-            l_model, 
-            l_model_nospace,
-            l_model_nodash,
-            l_model_dashtospace,
-            l_model_spacetodash)
+            e_model, 
+            e_model_nospace,
+            e_model_nodash,
+            e_model_dashtospace,
+            e_model_spacetodash)
         
-        self.l_regex_allow_trail = re.compile(regex, re.I)
+        self.l_regex_allow_trail = re.compile(regex)
 
         regex = '(%s|%s|%s|%s|%s)' % (
-            l_model, 
-            l_model_nospace,
-            l_model_nodash,
-            l_model_dashtospace,
-            l_model_spacetodash)
+            e_model, 
+            e_model_nospace,
+            e_model_nodash,
+            e_model_dashtospace,
+            e_model_spacetodash)
 
-        self.l_regex_allow_lead_and_trail = re.compile(regex, re.I)
+        self.l_regex_allow_lead_and_trail = re.compile(regex)
 
         if family:
             self.l_family = family.lower()
@@ -211,7 +213,7 @@ def findProducts(listing, products):
 
         if mfr in title or mfr in listing.l_mfr:
             if product.l_regex.search(title) \
-                or product.l_regex.search(listing.l_title_nodash):
+                or product.l_regex.search(title_nodash):
 
                 if product.family and product.l_family in title:
                     matchedFamily.append(product)
@@ -231,7 +233,7 @@ def findProducts(listing, products):
 
         if mfr in title or mfr in listing.l_mfr:
             if product.l_regex_allow_trail.search(title) \
-                or product.l_regex_allow_trail.search(listing.l_title_nodash):
+                or product.l_regex_allow_trail.search(title_nodash):
 
                 if product.family and product.l_family in title:
                     matchedFamily.append(product)
@@ -251,7 +253,7 @@ def findProducts(listing, products):
 
         if mfr in title or mfr in listing.l_mfr:
             if product.l_regex_allow_lead_and_trail.search(title) \
-                or product.l_regex_allow_lead_and_trail.search(listing.l_title_nodash):
+                or product.l_regex_allow_lead_and_trail.search(title_nodash):
 
                 if product.family and product.l_family in title:
                     matchedFamily.append(product)
