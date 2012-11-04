@@ -87,7 +87,7 @@ def loadProducts(file_name):
             family = jsonObj.get('family', None) 
 
             # Olympus PEN series seem to have the family in with the model
-            if 'olympus' == mfr.lower() and model[:4] == 'PEN':
+            if 'olympus' == mfr.lower() and model[:4] == 'PEN ':
                 family = 'PEN'
                 model = model[4:]
 
@@ -158,11 +158,10 @@ def findProducts(listing, products):
             if not product.family:
                 continue
 
+            mfr = product.mfr.lower()
             family = product.family.lower()
-            if family in title:
+            if family in title and mfr in title:
                 matchedProducts.append(product)
-
-       
 
     return matchedProducts
 
