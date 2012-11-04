@@ -30,6 +30,15 @@ class Product(object):
             self.l_model_spacetodash)
 
         self.l_regex = re.compile(regex, re.I)
+        
+        regex = '(\W%s|\W%s|\W%s|\W%s|\W%s)' % (
+            self.l_model, 
+            self.l_model_nospace,
+            self.l_model_nodash,
+            self.l_model_dashtospace,
+            self.l_model_spacetodash)
+        
+        self.l_regex_allow_trail = re.compile(regex, re.I)
 
         regex = '(%s|%s|%s|%s|%s)' % (
             self.l_model, 
@@ -38,7 +47,7 @@ class Product(object):
             self.l_model_dashtospace,
             self.l_model_spacetodash)
 
-        self.l_regex_relaxed = re.compile(regex, re.I)
+        self.l_regex_allow_lead_and_trail = re.compile(regex, re.I)
 
         if family:
             self.l_family = family.lower()
@@ -131,6 +140,10 @@ def loadProducts(file_name):
                 family = 'DMC'
                 model = model[4:]
 
+            # Sony alpha series seem to prefix models with 'DSLR-'
+            if 'sony' == mfr.lower() and model[:5] == 'DSLR-':
+                model = model[5:]
+
             result.append(Product(productName, mfr, family, model, announcedDate))
 
     return result
@@ -210,27 +223,58 @@ def findProducts(listing, products):
     if len(matchedProducts) > 0:
         return matchedProducts
     
-    # Next pass, check for model, mfr, and family relaxed
+    # Next pass, check for model, mfr, and family, allowing trailing alphanum
+    # after the model.
     for product in products:
         mfr = product.l_mfr
 
         if mfr in title or mfr in listing.l_mfr:
             if product.family and product.l_family in title:
-                if product.l_regex_relaxed.search(title) \
-                    or product.l_regex_relaxed.search(listing.l_title_nodash):
+                if product.l_regex_allow_trail.search(title) \
+                    or product.l_regex_allow_trail.search(listing.l_title_nodash):
 
                     matchedProducts.append(product)
 
     if len(matchedProducts) > 0:
         return matchedProducts
 
-    # Next pass, check for the product's model in the title relaxed
+    # Next pass, check for the product's model in the title, allowing trailing
+    # alphpanum after the model.
     for product in products:
         mfr = product.l_mfr
 
         if mfr in title or mfr in listing.l_mfr:
-            if product.l_regex_relaxed.search(title) \
-                or product.l_regex_relaxed.search(listing.l_title_nodash):
+            if product.l_regex_allow_trail.search(title) \
+                or product.l_regex_allow_trail.search(listing.l_title_nodash):
+
+                matchedProducts.append(product)
+
+    if len(matchedProducts) > 0:
+        return matchedProducts
+    
+    # Next pass, check for model, mfr, and family, allowing anything around
+    # the model.
+    for product in products:
+        mfr = product.l_mfr
+
+        if mfr in title or mfr in listing.l_mfr:
+            if product.family and product.l_family in title:
+                if product.l_regex_allow_lead_and_trail.search(title) \
+                    or product.l_regex_allow_lead_and_trail.search(listing.l_title_nodash):
+
+                    matchedProducts.append(product)
+
+    if len(matchedProducts) > 0:
+        return matchedProducts
+
+    # Next pass, check for the product's model in the title, allowing anything
+    # around the model.
+    for product in products:
+        mfr = product.l_mfr
+
+        if mfr in title or mfr in listing.l_mfr:
+            if product.l_regex_allow_lead_and_trail.search(title) \
+                or product.l_regex_allow_lead_and_trail.search(listing.l_title_nodash):
 
                 matchedProducts.append(product)
 
@@ -278,11 +322,11 @@ def main():
 
     for listing in listings:
         matchedProducts = findProducts(listing, products)
-        if len(matchedProducts) == 0:
+        if len(matchedProducts) > 1:
             print listing
-            #for product in matchedProducts:
-            #    print product
-            #print ""
+            for product in matchedProducts:
+                print product
+            print ""
 
 def usage():
     print """challenge.py, an implementation of Sortable's coding challenge
