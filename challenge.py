@@ -16,6 +16,11 @@ class Product(object):
         self.l_mfr = mfr.lower()
         self.l_model = model.lower()
 
+        self.l_model_nospace = self.l_model.replace(' ', '')
+        self.l_model_nodash = self.l_model.replace('-', '')
+        self.l_model_dashtospace = self.l_model.replace('-', ' ')
+        self.l_model_spacetodash = self.l_model.replace(' ', '-')
+
         if family:
             self.l_family = family.lower()
 
@@ -43,6 +48,8 @@ class Listing(object):
 
         self.l_title = title.lower()
         self.l_mfr = mfr.lower()
+
+        self.l_title_nodash = self.l_title.replace('-', '')
 
     def __str__(self):
         """Gets the json string representation of the listing."""
@@ -153,10 +160,16 @@ def findProducts(listing, products):
 
     # First pass, check for the product's model in the title
     for product in products:
-        model = product.l_model
-    
-        if model in title:
-            matchedProducts.append(product)
+        mfr = product.l_mfr
+
+        if mfr in title or mfr in listing.l_mfr:
+            if product.l_model in title \
+                or product.l_model_nospace in title \
+                or product.l_model_dashtospace in title \
+                or product.l_model_spacetodash in title \
+                or product.l_model_nodash in listing.l_title_nodash:
+
+                matchedProducts.append(product)
 
     # Second pass, if no models were matched then it may be a family-specific
     # accessory.
