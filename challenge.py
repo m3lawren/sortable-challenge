@@ -25,7 +25,7 @@ class Product(object):
         e_model_dashtospace = re.escape(l_model.replace('-', ' '))
         e_model_spacetodash = re.escape(l_model.replace(' ', '-'))
 
-        regex = '\W(%s|%s|%s|%s|%s)\W' % (
+        regex = '\W(?:%s|%s|%s|%s|%s)\W' % (
             e_model, 
             e_model_nospace,
             e_model_nodash,
@@ -34,7 +34,7 @@ class Product(object):
 
         self.l_regex = re.compile(regex)
         
-        regex = '\W(%s|%s|%s|%s|%s)' % (
+        regex = '\W(?:%s|%s|%s|%s|%s)' % (
             e_model, 
             e_model_nospace,
             e_model_nodash,
@@ -43,7 +43,7 @@ class Product(object):
         
         self.l_regex_allow_trail = re.compile(regex)
 
-        regex = '(%s|%s|%s|%s|%s)' % (
+        regex = '(?:%s|%s|%s|%s|%s)' % (
             e_model, 
             e_model_nospace,
             e_model_nodash,
