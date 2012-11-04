@@ -67,7 +67,7 @@ def loadProducts(file_name):
 
             jsonObj = json.loads(line)
 
-            #Validate required fields
+            # Validate required fields
             if 'product_name' not in jsonObj:
                 raise KeyError('Invalid product on line %d, missing product_name.' % lineNumber)
             if 'manufacturer' not in jsonObj:
@@ -77,14 +77,19 @@ def loadProducts(file_name):
             if 'announced-date' not in jsonObj:
                 raise KeyError('Invalid product on line %d, missing announced-date.' % lineNumber)
 
-            #Fetch required fields
+            # Fetch required fields
             productName = jsonObj['product_name']
             mfr = jsonObj['manufacturer']
             model = jsonObj['model']
             announcedDate = jsonObj['announced-date']
 
-            #Fetch optional fields, default to None
+            # Fetch optional fields, default to None
             family = jsonObj.get('family', None) 
+
+            # Olympus PEN series seem to have the family in with the model
+            if 'olympus' == mfr.lower() and model[:4] == 'PEN':
+                family = 'PEN'
+                model = model[4:]
 
             result.append(Product(productName, mfr, family, model, announcedDate))
 
@@ -140,7 +145,7 @@ def findProducts(listing, products):
     title = listing.title.lower()
     for product in products:
         model = product.model.lower()
-
+    
         if model in title:
             matchedProducts.append(product)
 
