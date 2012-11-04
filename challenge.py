@@ -37,10 +37,11 @@ def loadProducts(fileName):
 	result = []
 	f = open(fileName, 'r')
 
+	#Used for error messages
 	lineNumber = 0
 
 	for line in f:
-		lineNumber = lineNumber + 1
+		lineNumber += 1
 
 		jsonObj = json.loads(line)
 
@@ -67,6 +68,32 @@ def loadProducts(fileName):
 
 	return result
 
+def loadListings(fileName):
+	result = []
+	f = open(fileName, 'r')
+
+	#Used for error messages
+	lineNumber = 0
+
+	for line in f:
+		lineNumber += 1
+
+		jsonObj = json.loads(line)
+
+		#Validate required fields
+		if 'title' not in jsonObj:
+			raise KeyError('Invalid listing on line %d, missing title.' % lineNumber)
+		if 'manufacturer' not in jsonObj:
+			raise KeyError('Invalid listing on line %d, missing manufacturer.' % lineNumber)
+		if 'currency' not in jsonObj:
+			raise KeyError('Invalid listing on line %d, missing currency.' % lineNumber)
+		if 'price' not in jsonObj:
+			raise KeyError('Invalid listing on line %d, missing price.' % lineNumber)
+
+		result.append(Listing(jsonObj['title'], jsonObj['manufacturer'], jsonObj['currency'], jsonObj['price']))
+
+	return result
+
 def main():
 	try:
 		opts, args = getopt.getopt(sys.argv[1:], 'hp:l:', ['help','products=', 'listings='])
@@ -87,8 +114,8 @@ def main():
 		elif o in ('-l', '--listings'):
 			listingFile = str(a)
 
-	print productFile
-	print listingFile
+	products = loadProducts(productFile)
+	listings = loadListings(listingFile)
 
 def usage():
 	print """challenge.py, an implementation of Sortable's coding challenge
