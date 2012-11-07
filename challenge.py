@@ -14,11 +14,15 @@ class Product(object):
         self.family = family
         self.model = model
         self.announcedDate = announcedDate
-
-        self.l_mfr = mfr.lower()
         
+        # Do lowercasing now so we aren't doing it repeatedly later
+        self.l_mfr = mfr.lower()
+      
+        if family:
+            self.l_family = family.lower()
+       
+        # Set up the various regexes which will be used down the road
         l_model = model.lower()
-
         e_model = re.escape(l_model)
         e_model_nospace = re.escape(l_model.replace(' ', ''))
         e_model_nodash = re.escape(l_model.replace('-', ''))
@@ -52,8 +56,6 @@ class Product(object):
 
         self.l_regex_allow_lead_and_trail = re.compile(regex)
 
-        if family:
-            self.l_family = family.lower()
 
     def __str__(self):
         """Gets the json string representation of the product."""
@@ -199,15 +201,25 @@ def loadListings(fileName):
     return result
 
 def findProducts(listing, products):
+    """
+    Finds all products which match the given listing. 
+    
+    Check out ALGORITHM.md for a more detailed explanation of what's going 
+    on in here.
+    """
+
     matchedProducts = []
 
+    # Pad the titles with spaces because some of our regexes require a leading
+    # or trailing character, this means we don't have to make the regexes any
+    # worse.
     title = ' %s ' % listing.l_title
     title_nodash = ' %s ' % listing.l_title_nodash
   
     matchedFamily = []
     matchedNoFamily = []
 
-    # First pass, check for model, mfr
+    # First pass, check for model and mfr
     for product in products:
         mfr = product.l_mfr
 
@@ -226,7 +238,7 @@ def findProducts(listing, products):
     if len(matchedNoFamily) > 0:
         return matchedNoFamily
 
-    # Next pass, check for model, and mfr, allowing trailing alphanum
+    # Next pass, check for model, and mfr, allowing trailing alpha
     # after the model.
     for product in products:
         mfr = product.l_mfr
@@ -246,7 +258,7 @@ def findProducts(listing, products):
     if len(matchedNoFamily) > 0:
         return matchedNoFamily
 
-    # Next pass, check for model, mfr, allowing anything around
+    # Next pass, check for model, mfr, allowing any non-digit around
     # the model.
     for product in products:
         mfr = product.l_mfr
