@@ -307,11 +307,12 @@ def doMatching(products, listings):
     return productResults
 
 def log(msg):
+    """Just a quick logging function for consistent output."""
     sys.stderr.write("[%s] %s\n" % (str(datetime.now()), msg))
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, 'hp:l:o:', ['help','products=', 'listings=', 'output='])
+        opts, args = getopt.getopt(argv, 'hp:l:o:P', ['help','products=', 'listings=', 'output=', 'pretty'])
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -320,6 +321,7 @@ def main(argv):
     productFile = 'products.txt'
     listingFile = 'listings.txt'
     outputFile = 'matches.txt'
+    prettyPrint = False
 
     for o, a in opts:
         if o in ('-h', '--help'):
@@ -331,12 +333,14 @@ def main(argv):
             listingFile = str(a)
         elif o in ('-o', '--output'):
             outputFile = str(a)
+        elif o in ('-P', '--pretty'):
+            prettyPrint = True
 
-    log("Loading products from %s..." % productFile)
+    log("Loading products from '%s'..." % productFile)
     products = loadProducts(productFile)
     log("Loaded %d products." % len(products))
 
-    log("Loading listings from %s..." % listingFile)
+    log("Loading listings from '%s'..." % listingFile)
     listings = loadListings(listingFile)
     log("Loaded %d listings." % len(listings))
 
@@ -350,7 +354,17 @@ def main(argv):
     with open(outputFile, 'w') as output:
         for product in products:
             matchedListings = productResults.get(product.productName, [])
-            output.write('%s\n' % json.dumps({'product_name': product.productName, 'listings': matchedListings}))
+            
+            jsonDict = {'product_name': product.productName,
+                        'listings': matchedListings}
+            
+            jsonString = ''
+            if prettyPrint:
+                jsonString = json.dumps(jsonDict, sort_keys=True, indent=4)
+            else:
+                jsonString = json.dumps(jsonDict)
+
+            output.write('%s\n' % jsonString)
 
     log("Done.")
 
@@ -361,7 +375,8 @@ Copyright (C) 2012 Matt Lawrence
  -h, --help              displays this help
  -p, --products=FILE     use a specific product file, defaults to 'products.txt'
  -l, --listings=FILE     use a specific listing file, defaults to 'listings.txt'
- -o, --output=FILE       use a specific file for output, defaults to 'matches.txt'"""
+ -o, --output=FILE       use a specific file for output, defaults to 'matches.txt'
+ -P, --pretty            makes the JSON output pretty instead of one line, useful for diffing"""
 
 if __name__ == '__main__':
     main(sys.argv[1:])
