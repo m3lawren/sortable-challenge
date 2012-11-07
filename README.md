@@ -6,6 +6,7 @@ This is my attempt at [Sortable's coding challenge](http://sortable.com/blog/cod
 
 - Clone the repo `git clone git://github.com/m3lawren/sortable-challenge.git`
 - Run via `python challenge.py`
+- Use the `-h` or `--help` flag to see command line options
 - ???
 - Profit!
 
