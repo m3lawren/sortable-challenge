@@ -70,7 +70,7 @@ We do not worry about manually stripping out duplicate variations, for example `
 
 ## Performance
 
-The initial performance with this algorithm took about 1min to process the sample dataset on my Linode 1024. I'm impatient, so I decided to see if I could make some improvements:
+The initial performance with this algorithm took about 1min to process the sample dataset on my Linode 1024. After making the following improvements, runtime decreased to approximately 30sec on the same machine.
 
 1. The first thing I did was merge pairs of steps together. Steps 1&2, 3&4 and 5&6 are actually done at the same time. The code checks the regexes for a match, and then depending on whether or not the family is found it adds the product to either the `matchedFamily` or `matchedNoFamily` list. Then when it is done looping over the products, it will return `matchedFamily` if it is non-empty, then try and return `matchedNoFamily` if it is non-empty. If both are empty it moves to the next step. This was done in [c0a3190ea4](https://github.com/m3lawren/sortable-challenge/commit/c0a3190ea47ae49c263d7f273a90843799acf120).
 1. The second thing was to switch off case-insensitivity in the regex compilation. Since it was already lower-casing all relevant strings, there was a small improvement to be had at no cost. This was done in [2970d1dbd1](https://github.com/m3lawren/sortable-challenge/commit/2970d1dbd1407b9ab8a3ff5a631e9270fc9626f7).
